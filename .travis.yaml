@@ -1,0 +1,15 @@
+language: node_js
+node_js:
+  - "stable"
+cache:
+  directories:
+  - node_modules
+  - quizzer-app/node_modules
+script:
+  - npm test
+  - npm run install-ui
+  - npm run build-ui
+deploy:
+  provider: heroku
+  api_key:
+    secure: "6b4ea942-61b3-4e38-ba64-0de08b8c4cf0"

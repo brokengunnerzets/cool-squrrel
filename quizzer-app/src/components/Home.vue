@@ -3,56 +3,37 @@
     <nav class="navbar navbar-expand-lg">
       <a class="navbar-brand" href="#">CoolSquirrel</a>
     </nav>
-    <div class="container chat-window">
-      <div class="row">
-        <div class="col-12">
-          <h1>Chatroom</h1>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-9 chat">
-          <div class="container-fluid">
-            <ul id="messages">
-              <li v-for="(message, index) in messages" :key="index">{{message}}</li>
-            </ul>
-            <input id="m" autocomplete="off" v-model="currentMessage" /><button v-on:click="sendMessage">Send</button>
-          </div>
-        </div>
-         <div class="col-3 users">
-          <div class="container-fluid">
-            users
-          </div>
-        </div>
-      </div>
+    <div class="container">
+      asdddddddddd
     </div>
   </div>
 </template>
 
 <script>
+import Login from './Login';
+
 export default {
   name: 'Home',
-  props: {
-    msg: String,
-  },
+  components: { Login },
   data: () => ({
-    socketSetupDone: false,
-    socket: io.connect(),
-    messages: [],
+    // socketSetupDone: false,
+    // socket: io.connect(),
+    // messages: [],
     currentMessage: '',
   }),
-  created() {
-    this.socket.on('chat message', function (data) {
-      console.log('Asdasd');
-      this.messages.push(data);
-    }.bind(this));
-  },
+  // created() {
+  //   this.socket.on('chat message', function (data) {
+  //     console.log('Asdasd');
+  //     this.messages.push(data);
+  //   }.bind(this));
+  // },
   methods: {
-    sendMessage() {
-      if (this.currentMessage) {
-        this.socket.emit('chat message', this.currentMessage);
-        this.currentMessage = '';
-      }
-    }
+    // sendMessage() {
+    //   if (this.currentMessage) {
+    //     this.socket.emit('chat message', this.currentMessage);
+    //     this.currentMessage = '';
+    //   }
+    // }
   }
 };
 </script>
