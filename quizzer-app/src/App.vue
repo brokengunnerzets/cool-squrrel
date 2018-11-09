@@ -1,10 +1,10 @@
 <template>
   <div id="app" class="container-fluid d-flex justify-content-center align-items-center flex-column" v-bind:style="{ backgroundColor: color}">
-    <Home v-if="room && !isGameMasterMode"/>
-    <Login v-if="!room && !isGameMasterMode" :color="color" v-on:toGameMaster="toGameMasterMode"/>
+    <Login v-if="!room && !isGameMasterMode" :color="color" v-on:roomConnected="soc => setUpRoom(soc)"/>
+    <PLobby v-if="room && !isGameMasterMode && socketRef" :color="color" :socket="socketRef" />
     <GMLogin v-if="!room && isGameMasterMode" :color="color" v-on:roomConnected="soc => setUpRoom(soc)"/>
     <GMLobby v-if="room && isGameMasterMode && socketRef" :color="color" :socket="socketRef" />
-    <div>
+    <div v-if="!room">
       <button class="btn" v-on:click="toggleMode">{{ toggleText }}</button>
     </div>
   </div>
@@ -12,16 +12,16 @@
 
 <script>
 import randomcolor from 'randomcolor';
-import Home from './components/Home.vue';
-import Login from './components/Login.vue';
+import Login from './components/PlayerMode/Login.vue';
+import PLobby from './components/PlayerMode/GameLobby.vue';
 import GMLogin from './components/GameMasterMode/LoginGameMaster';
 import GMLobby from './components/GameMasterMode/GameLobby';
 
 export default {
   name: 'app',
   components: {
-    Home,
     Login,
+    PLobby,
     GMLogin,
     GMLobby,
   },
@@ -49,7 +49,6 @@ export default {
     },
     setUpRoom(soc) {
       this.socketRef = soc;
-      
     }
   },
 };

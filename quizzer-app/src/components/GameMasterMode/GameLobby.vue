@@ -4,16 +4,25 @@
     <div class="row">
       <div class="col-sm-12 col-md-8 play-controller">
         <h2>Current Round: {{ currentRound }}</h2>
-        <button class="btn boutane" v-bind:style="{ backgroundColor: color}" v-on:click="timerBtnFct()">{{ btnText }}</button>
-        <button class="btn boutane" v-if="!timerStarted && timerPaused" v-bind:style="{ backgroundColor: color}">Resume</button>
-        <button class="btn boutane" v-if="!timerStarted && timerPaused" v-bind:style="{ backgroundColor: color}">Reset</button>
-        <stopwatch ref="timerRef"></stopwatch>
+        <button class="btn boutane" v-if="!timerStarted && !timerPaused" v-bind:style="{ backgroundColor: color}" v-on:click="timerBtnFct()">{{ btnText }}</button>
+        <button class="btn boutane" v-if="!timerStarted && timerPaused" @click="counterOffer()" v-bind:style="{ backgroundColor: color}">Counter</button>
+        <button class="btn boutane" v-if="!timerStarted && timerPaused" @click="resetRound()" v-bind:style="{ backgroundColor: color}">Reset</button>
+        <audio ref="audioRef">
+          <source src="/sounds/buzzer-team-1.mp3" type="audio/mpeg">
+        </audio>
       </div>
       <div class="col-sm-12 col-md-4">
         <hr/>
         <h2>Users connected</h2>
-        <b-list-group :key="index" v-for="(user, index) in users">
-          <b-list-group-item>{{ user }}</b-list-group-item>
+        <hr/>
+        <h3>Team 1</h3>
+        <b-list-group :key="index" v-for="(user, index) in users.team1">
+          <b-list-group-item :class="{ buzzed: user === playerBuzzed }">{{ user }}</b-list-group-item>
+        </b-list-group>
+        <hr/>
+        <h3>Team 2</h3>
+        <b-list-group :key="index" v-for="(user, index) in users.team2">
+          <b-list-group-item :class="{ buzzed: user === playerBuzzed }">{{ user }}</b-list-group-item>
         </b-list-group>
       </div>
     </div>
@@ -22,20 +31,23 @@
 
 <script>
 import _ from 'lodash';
-
 export default {
   name: 'LobbyGM',
-  components: { Stopwatch },
   props: {
     socket: Object,
     color: String,
   },
   data() {
     return {
-      users: [],
+      users: {
+        team1: [],
+        team2: [],
+      },
       timerStarted: false,
       timerPaused: false,
       currentRound: 1,
+      playerBuzzed: '',
+      teamBuzzed: '',
     };
   },
   computed: {
@@ -49,34 +61,52 @@ export default {
   methods: {
     timerBtnFct() {
       if (!this.timerStarted) {
-        this.socket.emit('gm_timerStart', this.currentRound);
-        this.$refs.timerRef.startTimer();
+        this.socket.emit('gm_roundStart', this.currentRound);
         this.setTimerData(true, false);
-      } else {
-        this.socket.emit('gm_timerPause', this.currentRound);
-        // this.$refs.timerRef.startTimer();
-        this.setTimerData(false, true);
       }
     },
     setTimerData(started, paused) {
       this.timerStarted = started;
       this.timerPaused = paused;
+    },
+    playSound() {
+      this.$refs.audioRef.play();
+    },
+    resetRound() {
+      this.socket.emit('gm_roundEnd');
+    },
+    counterOffer() {
+      this.socket.emit('gm_offerCounter', this.teamBuzzed);
+      this.teamBuzzed = '';
+      this.playerBuzzed = '';
     }
   },
   created() {
     if (this.socket) {
-      this.socket.on('userJoined', (username) => {
-        this.users.push(username);
+      this.socket.on('userJoined', ({ username, team }) => {
+        this.users[team].push(username);
       });
 
-      this.socket.on('userLeft', (username) => {
-        const clone = _.cloneDeep(this.users);
+      this.socket.on('userLeft', ({ username, team }) => {
+        const clone = _.cloneDeep(this.users[team]);
         const newArray = _.remove(clone, value => value === username );
-        this.users = clone;
+        this.users[team] = clone;
       });
 
       this.socket.on('game_roundEnd', () => {
         this.currentRound = this.currentRound += 1;
+        this.timerStarted = false;
+        this.timerPaused = false;
+        this.playerBuzzed = '';
+        this.teamBuzzed = '';
+      });
+
+      this.socket.on('gm_receiveBuzz', ({ username, team }) => {
+        this.playerBuzzed = username;
+        this.teamBuzzed = team;
+        this.timerPaused = true;
+        this.setTimerData(false, true);
+        this.playSound();
       });
     }
   },
@@ -134,5 +164,10 @@ form button { width: 9%; background: rgb(130, 224, 255); border: none; }
 }
 .boutane {
   margin: 10px;
+}
+
+.buzzed {
+  background-color: red;
+  font-size: 600;
 }
 </style>
