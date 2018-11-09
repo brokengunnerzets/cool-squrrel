@@ -7,13 +7,16 @@
     "start": "node app.js",
     "test": "echo \"Error: no test specijfied\" && exit 1",
     "install-ui": "cd quizzer-app && npm install -g vue-cli && npm install",
-    "build-ui": "cd quizzer-app && npm run build"
+    "build-ui": "cd quizzer-app && npm run build",
+    "super-start": "cd quizzer-app && npm run build && node ../app.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "bootstrap": "^4.1.3",
     "express": "^4.16.4",
+    "lodash": "^4.17.11",
+    "randomstring": "^1.1.5",
     "socket.io": "^2.1.1",
     "vuex": "^3.0.1"
   }
